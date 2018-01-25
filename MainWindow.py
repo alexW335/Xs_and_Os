@@ -1,7 +1,6 @@
 import pygame
 from pygame.locals import *
-import numpy as np
-
+import random
 
 pygame.init()
 pygame.font.init()
@@ -16,13 +15,17 @@ donut = pygame.image.load("donut.png").convert_alpha()
 
 screen.blit(bg, (0, 0))
 
-donut_coords = np.array([screen_dims[0]/4, screen_dims[1]/2])
+donut_coords = [screen_dims[0]/4, screen_dims[1]/2]
 screen.blit(donut, (donut_coords[0], donut_coords[1]))
 
 myfont = pygame.font.SysFont('Comic Sans MS', 50)
 # def display_msg(msg, col):
-    
+
+pillar_timer = 0
+pillar_trigger = 50
 pillar_speed = 0
+pillar_gap = 25
+pillars = []
 count = 0
 speed = 0
 gravity = 2
@@ -31,7 +34,9 @@ started = False
 
 while not game_exit:
     tick_time = clock.tick(50)
+    
     if started:
+        pillar_timer = (pillar_timer+1) % pillar_trigger
         if speed >= -30:
             speed -= gravity
     
@@ -52,8 +57,20 @@ while not game_exit:
                     started = True
                 speed = 20
                 pillar_speed = 2
-    donut_coords[1] -= speed
     
+    
+    if pillar_timer == pillar_trigger-1:
+        pillars.append([screen_dims[0], random.randrange(0+pillar_gap, screen_dims[1] - pillar_gap)])
+        print(pillars)
+    
+    if started:
+        if pillars:
+            for pil in pillars:
+                pil[0] -= pillar_speed
+            if pillars[0][0] <=0:
+                pillars = pillars[1:]
+        
+    donut_coords[1] -= speed
     
     if donut_coords[1] >= screen_dims[1]-63:
         speed = 0
