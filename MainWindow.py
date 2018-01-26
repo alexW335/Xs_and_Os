@@ -10,7 +10,9 @@ clock = pygame.time.Clock()
 screen_dims = (750,569)
 screen = pygame.display.set_mode(screen_dims)
 screen.fill([255, 255, 255])
-pygame.display.set_caption("Pygame Demo")
+with open("scores") as s:
+    hs = s.read()
+pygame.display.set_caption("Good ol' flap: High Score {}".format(hs))
 
 if thug_mode:
     bg = pygame.image.load("./data/background.png").convert()
@@ -42,6 +44,7 @@ gravity = 2
 game_exit = False
 started = False
 lost = False
+top_score = hs
 
 while not game_exit:
     tick_time = clock.tick(60)
@@ -54,7 +57,12 @@ while not game_exit:
     for event in pygame.event.get():
     
         if event.type == QUIT:
-            game_exit = True
+            if count > int(hs):
+                hs = count
+                with open("scores", 'w') as f: 
+                    f.write(str(hs)) 
+            pygame.quit()
+            quit()
             
         elif event.type == KEYDOWN:
             keys = pygame.key.get_pressed()
@@ -62,6 +70,19 @@ while not game_exit:
                 started = False
                 speed = 0
                 pillar_speed = 0
+            
+            if keys[K_RETURN]:
+                donut_coords = [screen_dims[0]/4, screen_dims[1]/2]
+                started = False
+                speed = 0
+                pillar_speed = 0
+                pillars = []
+                if count > int(hs):
+                    hs = count
+                count = 0
+                speed = 0
+                lost = False
+                pillar_timer = 0
                 
             if keys[K_UP]:
                 if not started:
@@ -71,7 +92,6 @@ while not game_exit:
     
     if pillar_timer == pillar_trigger-1:
         pillars.append([screen_dims[0], random.randrange(0+screen_dims[1]//5, round(screen_dims[1]*0.8)), False])
-        print(pillars)
     
     if started:
         if pillars:
@@ -87,7 +107,7 @@ while not game_exit:
     
     for pil in pillars:
         if (pil[0] < donut_coords[0]+30) and (pil[0] > donut_coords[0]):
-            if (donut_coords[1] <= screen_dims[1] - pil[1] - pillar_gap) or (donut_coords[1] >= pil[1]):
+            if (donut_coords[1] <= screen_dims[1] - pil[1] - pillar_gap-30) or (donut_coords[1] >= pil[1]+30):
                 started = False
                 speed = 0
                 pillar_speed = 0
@@ -111,5 +131,4 @@ while not game_exit:
         screen.blit(textsurface, (screen_dims[0]/2, screen_dims[1]*0.05))
     
     pygame.display.flip()
-pygame.quit()
-quit()
+    
